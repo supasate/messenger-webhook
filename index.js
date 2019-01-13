@@ -13,7 +13,6 @@ function handleMessage(senderPsid, receivedMessage) {
   let response;
 
   // Check if the message contains text
-  console.log('receivedMessage', receivedMessage);
   if (receivedMessage.text) {
     // Create the payload for a basic text message
     response = {
@@ -56,7 +55,6 @@ function handleMessage(senderPsid, receivedMessage) {
 
 // Handle messaging_postbacks events
 function handlePostback(senderPsid, receivedPostback) {
-  console.log('receivedPostback', receivedPostback);
   let response;
 
   // Get the payload for the postback
@@ -109,9 +107,20 @@ app.post('/webhook', (req, res) => {
   if (body.object === 'page') {
     // Iterate over each entry - there may be multiple if batched
     body.entry.forEach((entry) => {
-      // Get the message. entry.messaging is an array, but
-      // will only ever contain one message, so, we get index 0
-      const webhookEvent = entry.messaging[0];
+      console.log('entry', entry);
+      let webhookEvent;
+
+      if (entry.messaging) {
+        // If this app is a primary receiver, it will receive a messaging event.
+        // Get the message. entry.messaging is an array, but
+        // will only ever contain one message, so, we get index 0
+        webhookEvent = entry.messaging[0];
+      } else if (entry.standby) {
+        // If this app is a secondary receiver, it will receive a standby event.
+        // Get the message. entry.standby is an array, but
+        // will only ever contain one message, so, we get index 0
+        webhookEvent = entry.standby[0];
+      }
       console.log('webhookEvent', webhookEvent);
 
       // Get the sender PSID
